@@ -1,4 +1,5 @@
 import React from "react";
+import { setContext } from '@apollo/client/link/context';
 import {
   ApolloProvider,
   ApolloClient,
@@ -21,9 +22,18 @@ import Signup from "./pages/Signup";
 const httpLink = createHttpLink({
   uri: "/graphql",
 });
+const authLink = setContext((_, { headers }) => {
+  const token = localStorage.getItem('id_token');
+  return {
+    headers: {
+      ...headers,
+      authorization: token ? `Bearer ${token}` : '',
+    },
+  };
+});
 // second, instantiate the Apollo Client instance and create the connection to the API endpoint.
 const client = new ApolloClient({
-  link: httpLink,
+  link: authLink.concat(httpLink),
   // instantiate a new cache object
   cache: new InMemoryCache(),
 });
